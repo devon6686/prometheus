@@ -1,0 +1,9 @@
+groups:
+- name: node_rules
+  rules:
+  - record: instance:node_cpu:avg_rate5m
+    expr: 100 - avg(irate(node_cpu_seconds_total{mode="idle"}[5m])) by (instance) * 100
+    labels:
+      metric_type: aggregation
+  - record: instance:node_memory_usage:percentage
+    expr: (node_memory_MemTotal_bytes - (node_memory_MemFree_bytes + node_memory_Cached_bytes + node_memory_Buffers_bytes))/node_memory_MemTotal_bytes * 100

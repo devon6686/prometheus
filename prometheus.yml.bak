@@ -1,0 +1,78 @@
+global:
+  scrape_interval: 5s 
+  scrape_timeout: 5s 
+  evaluation_interval: 5s 
+
+rule_files:
+  - "rules/*_rules.yml"
+  - "rules/*_alerts.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+      - targets: ["10.0.218.4:9093"]
+
+scrape_configs: 
+  - job_name: "prometheus" 
+    honor_timestamps: true
+    metrics_path: "/metrics"
+    static_configs: 
+    - targets:
+      - "localhost:9090"
+      labels:
+        group: "localhost"
+    params:
+      collect[]:
+        - cpu
+        - meminfo
+        - diskstats
+        - netdev
+        - netstat
+        - filefd
+        - filesystem
+        - xfs
+        - systemd
+
+  - job_name: "pushgateway"
+    honor_labels: true
+    static_configs:
+      - targets: ["10.0.218.4:9091"] 
+        labels:
+          group: "psgw"
+
+  - job_name: "sd_node"
+    file_sd_configs:
+      - files:
+        - targets/nodes/*.json
+        refresh_interval: 5m
+
+  - job_name: "mysql"
+    static_configs:
+      - targets: ["10.0.218.4:9114"]
+        labels:
+          group: "mysql"
+
+  - job_name: "altermanager"
+    static_configs:
+      - targets: ["10.0.218.4:9093"]
+
+  - job_name: "docker"
+    static_configs:
+      - targets: ["10.0.218.4:8010"]
+        labels:
+          group: "cadvisor"
+    metric_relabel_configs:
+      - regex: "(kernelVersion|container_label_maintainer)"
+        action: labeldrop
+      - source_labels: [__name__]
+        separator: ","
+        regex: "(container_tasks_state|container_memory_failures_total)"
+        action: drop
+        # delete 指标
+      - source_labels: [id]
+        regex: "/docker/([a-z0-9]+)"
+        replacement: "$1"
+        target_label: id 
+        #target_label: container_id
+        # rename label value
+      

@@ -1,0 +1,38 @@
+groups:
+- name: node_alerts
+  rules:
+  - alert: InstanceDown
+    expr: up == 0
+    for: 5m  # 控制在触发警报之前测试表达式必须为true的时间长度
+    labels:
+      severity: disaster
+    annotations:
+      summary: "Instance {{ $labels.instance }} down"
+      description: "Instance {{ $labels.instance }} of job {{ $labels.job }} has been down for 5 minutes."
+
+  - alert: HighNodeCPU
+    expr: instance:node_cpu:avg_rate5m > 80
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: High Node Cpu for 5 minutes
+      console: Current {{ $labels.instance }} CPU usage is {{ humanize $value }}, Please check at dashboard
+
+  - alert: NodeServiceDown
+    expr: node_systemd_unit_state{state="active"} != 1
+    for: 60s
+    labels:
+      severity: critical
+    annotations:
+      summary: Service {{ $labels.name }} on {{ $labels.instance }} is not longer active!
+
+  - alert: InstanceGone
+    expr: absent(up{job="sd_node"})
+    for: 10s
+    labels:
+      severity: critical
+    annotations:
+      summary: Host {{ $labels.instance }} is no longer reporting!
+      description: OMG, Instances are gone!
+     

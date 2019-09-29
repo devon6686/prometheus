@@ -1,0 +1,17 @@
+global:
+  smtp_from: "wlx0891133@126.com"
+  smtp_smarthost: "smtp.126.com:25"
+  smtp_auth_username: "devon6686"
+  smtp_auth_password: "wlx0891133"
+  smtp_require_tls: false
+
+templates:
+  - "/etc/altermanager/template/*.tmpl"
+
+route:
+  receiver: email
+
+receivers:
+  - name: "email"
+    email_configs:
+      - to: "devon6686@126.com"
