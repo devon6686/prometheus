@@ -25,6 +25,7 @@ receivers:
   - name: 'email'
     email_configs:
       - to: 'user1@email'
+        send_resolved: true
   - name: 'support_team'
     email_configs:
       - to: 'user2@126.com'
